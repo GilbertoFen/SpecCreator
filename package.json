@@ -7,7 +7,8 @@
     "apps/frontend"
   ],
   "scripts": {
-    "dev": "npm run dev --workspace backend & npm run dev --workspace frontend",
+    "dev": "bash ./scripts/dev-all.sh",
+    "dev:all": "bash ./scripts/dev-all.sh",
     "build": "npm run build --workspace backend && npm run build --workspace frontend",
     "lint": "npm run lint --workspace backend && npm run lint --workspace frontend"
   }

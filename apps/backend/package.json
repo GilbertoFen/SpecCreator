@@ -6,9 +6,11 @@
     "dev": "nest start --watch",
     "build": "nest build",
     "start": "node dist/main.js",
+    "start:render": "npm run prisma:migrate:deploy && node dist/main.js",
     "lint": "eslint .",
     "prisma:generate": "DOTENV_CONFIG_PATH=../../.env node -r dotenv/config ../../node_modules/prisma/build/index.js generate --schema prisma/schema.prisma",
-    "prisma:migrate": "DOTENV_CONFIG_PATH=../../.env node -r dotenv/config ../../node_modules/prisma/build/index.js migrate dev --schema prisma/schema.prisma"
+    "prisma:migrate": "DOTENV_CONFIG_PATH=../../.env node -r dotenv/config ../../node_modules/prisma/build/index.js migrate dev --schema prisma/schema.prisma",
+    "prisma:migrate:deploy": "DOTENV_CONFIG_PATH=../../.env node -r dotenv/config ../../node_modules/prisma/build/index.js migrate deploy --schema prisma/schema.prisma"
   },
   "dependencies": {
     "@google/genai": "^1.30.0",

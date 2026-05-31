@@ -6,7 +6,7 @@ import { GlobalExceptionFilter } from './shared/filters/global-exception.filter'
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const frontendOrigin = process.env.FRONTEND_ORIGIN ?? 'http://localhost:3000';
-  const host = process.env.HOST ?? '127.0.0.1';
+  const host = process.env.HOST ?? '0.0.0.0';
   const port = resolveBackendPort();
 
   app.enableCors({

@@ -12,7 +12,7 @@
 - Exponer `GET /api/specs`.
 - Recibir `description: string`.
 - Generar una especificacion tecnica estructurada con Gemini.
-- Persistir las specs validas en SQLite.
+- Persistir las specs validas en Supabase Postgres via Prisma.
 - Responder JSON consistente y manejar errores con mensajes claros.
 
 ## Estructura actual
