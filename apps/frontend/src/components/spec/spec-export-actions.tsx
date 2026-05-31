@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { downloadPdfFromText } from '@/services/pdf-service';
+import { downloadSpecAsPdf } from '@/services/pdf-service';
 import { convertSpecToMarkdown } from '@/services/spec-service';
 import { GeneratedSpec } from '@/types/spec';
 
@@ -71,9 +71,7 @@ export function SpecExportActions({
 
   function handleDownloadPdf() {
     const safeName = sanitizeFileName(fileBaseName);
-    const pdfText = convertSpecToMarkdown(spec, description);
-
-    downloadPdfFromText(`${safeName}.pdf`, safeName, pdfText);
+    downloadSpecAsPdf(`${safeName}.pdf`, safeName, spec, description);
     setActionState('pdf-file');
     scheduleReset();
   }

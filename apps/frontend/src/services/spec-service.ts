@@ -108,3 +108,22 @@ export async function fetchSpecHistory(): Promise<SpecHistoryResponse> {
 
   return normalizeHistoryPayload(data);
 }
+
+export async function deleteSpecification(specId: number): Promise<void> {
+  const response = await fetch(`/api/specs/${specId}`, {
+    method: 'DELETE',
+  });
+
+  if (response.ok) {
+    return;
+  }
+
+  const rawText = await response.text();
+  const data = rawText ? (JSON.parse(rawText) as BackendErrorPayload) : null;
+
+  throw new SpecServiceError(data?.message ?? 'No fue posible eliminar la especificacion.', {
+    code: 'DELETE_REQUEST_FAILED',
+    details: data?.error,
+    status: response.status,
+  });
+}

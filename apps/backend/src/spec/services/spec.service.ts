@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import {
@@ -44,6 +44,28 @@ export class SpecService {
     });
 
     return specs.map((spec) => this.toStoredSpecRecord(spec));
+  }
+
+  async deleteSpec(specId: number): Promise<void> {
+    const specDelegate = this.getSpecDelegate();
+    const existingSpec = await specDelegate.findUnique({
+      where: {
+        id: specId,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (!existingSpec) {
+      throw new NotFoundException('La especificacion solicitada no existe.');
+    }
+
+    await specDelegate.delete({
+      where: {
+        id: specId,
+      },
+    });
   }
 
   private toStoredSpecRecord(spec: SpecRecordModel): StoredSpecRecord {

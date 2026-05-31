@@ -10,11 +10,31 @@ import {
 } from '@/components/spec';
 import { WarningModal } from '@/components/ui';
 import { loginWithBackend } from '@/services/auth-service';
-import { fetchSpecHistory, generateSpecification } from '@/services/spec-service';
+import {
+  deleteSpecification,
+  fetchSpecHistory,
+  generateSpecification,
+} from '@/services/spec-service';
 import { SpecServiceError } from '@/services/spec-service';
 import { AuthenticatedUser, StoredSpecRecord } from '@/types/spec';
 
 const GENERATION_COOLDOWN_MS = 60_000;
+const STORAGE_THEME_KEY = 'spec-creator-theme';
+type ThemeMode = 'light' | 'dark';
+
+function resolveInitialTheme(): ThemeMode {
+  if (typeof window === 'undefined') {
+    return 'light';
+  }
+
+  const savedTheme = window.localStorage.getItem(STORAGE_THEME_KEY);
+
+  if (savedTheme === 'light' || savedTheme === 'dark') {
+    return savedTheme;
+  }
+
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
 
 export function SpecWorkspace() {
   const [cooldownEndsAt, setCooldownEndsAt] = useState<number | null>(null);
@@ -27,13 +47,21 @@ export function SpecWorkspace() {
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isLoginPending, setIsLoginPending] = useState(false);
+  const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null);
   const [modalMessage, setModalMessage] = useState<string | null>(null);
+  const [theme, setTheme] = useState<ThemeMode>(resolveInitialTheme);
   const [user, setUser] = useState<AuthenticatedUser | null>(null);
   const [now, setNow] = useState(() => Date.now());
 
   const isLoggedIn = Boolean(user);
   const remainingCooldownMs = cooldownEndsAt ? Math.max(cooldownEndsAt - now, 0) : 0;
   const isCooldownActive = remainingCooldownMs > 0;
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    document.documentElement.style.colorScheme = theme;
+    window.localStorage.setItem(STORAGE_THEME_KEY, theme);
+  }, [theme]);
 
   useEffect(() => {
     if (!isCooldownActive) {
@@ -93,7 +121,12 @@ export function SpecWorkspace() {
     setHistoryError(null);
     setIsHistoryOpen(false);
     setModalMessage(null);
+    setPendingDeleteId(null);
     setUser(null);
+  }
+
+  function handleToggleTheme() {
+    setTheme((currentValue) => (currentValue === 'dark' ? 'light' : 'dark'));
   }
 
   async function loadHistory() {
@@ -117,11 +150,33 @@ export function SpecWorkspace() {
   async function handleOpenHistory() {
     setIsHistoryOpen(true);
 
-    if (history.length > 0 || isHistoryLoading) {
+    if (isHistoryLoading) {
       return;
     }
 
     await loadHistory();
+  }
+
+  async function handleDeleteSpec(specId: number) {
+    setPendingDeleteId(specId);
+    setHistoryError(null);
+
+    try {
+      await deleteSpecification(specId);
+      setHistory((currentItems) => currentItems.filter((item) => item.id !== specId));
+
+      if (result?.id === specId) {
+        setResult(null);
+      }
+    } catch (deleteError) {
+      setHistoryError(
+        deleteError instanceof Error
+          ? deleteError.message
+          : 'No fue posible eliminar la especificacion.',
+      );
+    } finally {
+      setPendingDeleteId(null);
+    }
   }
 
   async function handleGenerate() {
@@ -167,7 +222,9 @@ export function SpecWorkspace() {
           description="El formulario valida credenciales reales contra el backend antes de habilitar la consola."
           isSubmitting={isLoginPending}
           onLogin={handleLogin}
+          onToggleTheme={handleToggleTheme}
           submitLabel="Iniciar sesion"
+          theme={theme}
           title="Ingresa a tu consola de especificaciones"
         />
       </main>
@@ -226,6 +283,8 @@ export function SpecWorkspace() {
         isOpen={isHistoryOpen}
         items={history}
         onClose={() => setIsHistoryOpen(false)}
+        onDelete={handleDeleteSpec}
+        pendingDeleteId={pendingDeleteId}
       />
 
       <WarningModal
