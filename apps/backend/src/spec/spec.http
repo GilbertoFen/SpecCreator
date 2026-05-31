@@ -1,0 +1,38 @@
+@baseUrl = http://127.0.0.1:3010
+
+### Register
+POST {{baseUrl}}/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "demo_user",
+  "password": "demo_pass_654321"
+}
+
+### Login
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "demo_user",
+  "password": "demo_pass_123"
+}
+
+### Generate spec
+POST {{baseUrl}}/api/specs
+Content-Type: application/json
+
+{
+  "description": "Aplicacion web para que pequenos restaurantes gestionen reservas, mesas, menus y recordatorios por WhatsApp."
+}
+
+### List specs history
+GET {{baseUrl}}/api/specs
+
+### Out of scope prompt
+POST {{baseUrl}}/api/specs
+Content-Type: application/json
+
+{
+  "description": "Resuelve la ecuacion x^2 + 3x + 2 = 0"
+}
